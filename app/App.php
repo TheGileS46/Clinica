@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace App;
 
 use App\Controllers\HomeController;
+use App\Controllers\Auth\LoginController;
+use App\Controllers\Administrador\AdministradorController;
+use App\Controllers\Medico\MedicoController;
+use App\Controllers\Recepcion\RecepcionController;
+use App\Support\Auth;
 use RuntimeException;
 use Throwable;
 
@@ -26,6 +31,7 @@ final class App
     public function run(): void
     {
         $this->autoload();
+        Auth::start();
 
         try {
             $path = $this->path();
@@ -37,6 +43,31 @@ final class App
                     'php' => PHP_VERSION,
                     'time' => date(DATE_ATOM),
                 ]);
+            }
+
+            if ($path === $this->routes['login']) {
+                (new LoginController())->index();
+                return;
+            }
+
+            if ($path === $this->routes['logout']) {
+                (new LoginController())->logout();
+                return;
+            }
+
+            if ($path === $this->routes['admin']) {
+                (new AdministradorController())->index();
+                return;
+            }
+
+            if ($path === $this->routes['medico']) {
+                (new MedicoController())->index();
+                return;
+            }
+
+            if ($path === $this->routes['recepcion']) {
+                (new RecepcionController())->index();
+                return;
             }
 
             if ($path !== $this->routes['home']) {
