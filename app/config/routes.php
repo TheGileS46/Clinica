@@ -9,6 +9,7 @@ use App\Controllers\Administrador\MedicoController as AdminMedicoController;
 use App\Controllers\Administrador\ServicioController;
 use App\Controllers\Administrador\UsuarioController;
 use App\Controllers\Auth\LoginController;
+use App\Controllers\Citas\CitaController;
 use App\Controllers\HealthController;
 use App\Controllers\HomeController;
 use App\Controllers\Medico\MedicoController;
@@ -71,6 +72,16 @@ return [
     ['GET', '/pacientes/editar', [PacienteController::class, 'edit']],
     ['POST', '/pacientes/editar', [PacienteController::class, 'update']],
     ['POST', '/pacientes/estado', [PacienteController::class, 'toggle']],
+
+    // Citas (HU-10 · RF05)
+    ['GET', '/citas', [CitaController::class, 'index']],
+    ['GET', '/citas/ver', [CitaController::class, 'show']],
+    ['GET', '/citas/crear', [CitaController::class, 'create']],
+    ['POST', '/citas/crear', [CitaController::class, 'store']],
+    ['GET', '/citas/editar', [CitaController::class, 'edit']],
+    ['POST', '/citas/editar', [CitaController::class, 'update']],
+    ['POST', '/citas/estado', [CitaController::class, 'status']],
+    ['GET', '/citas/disponibilidad', [CitaController::class, 'availability']],
 
     // Bitácora de accesos (RNF01.7)
     ['GET', '/admin/bitacora', [BitacoraController::class, 'index']],

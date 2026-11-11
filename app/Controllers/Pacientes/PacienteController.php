@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Pacientes;
 
 use App\Controllers\Controller;
+use App\Models\Citas\CitaModel;
 use App\Models\Pacientes\PacienteModel;
 use App\Support\Auth;
 use App\Support\Bitacora;
@@ -51,6 +52,7 @@ final class PacienteController extends Controller
         $this->render('pacientes/show', [
             'pageTitle' => $paciente['nombre'] . ' ' . $paciente['apellidos'],
             'paciente' => $paciente,
+            'citas' => (new CitaModel())->forPaciente((int) $paciente['id']),
         ]);
     }
 

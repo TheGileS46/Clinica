@@ -17,6 +17,11 @@ $labels = [
     'medico_actualizado' => 'Médico actualizado',
     'medico_activado' => 'Médico activado',
     'medico_desactivado' => 'Médico desactivado',
+    'cita_creada' => 'Cita agendada',
+    'cita_modificada' => 'Cita modificada',
+    'cita_confirmada' => 'Cita confirmada',
+    'cita_completada' => 'Cita completada',
+    'cita_cancelada' => 'Cita cancelada',
 ];
 $label = static fn (string $evento): string => $labels[$evento] ?? ucfirst(str_replace('_', ' ', $evento));
 ?>
