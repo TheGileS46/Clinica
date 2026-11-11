@@ -17,6 +17,9 @@ final class UsuarioController extends Controller
 {
     private UsuarioModel $usuarios;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $admin;
 
     public function __construct()
@@ -55,7 +58,13 @@ final class UsuarioController extends Controller
         }
 
         $id = $this->usuarios->create($values);
-        Bitacora::registrar('usuario_creado', 'exito', $this->admin['id'], $this->admin['correo'], 'Usuario #' . $id . ' (' . $values['correo'] . ')');
+        Bitacora::registrar(
+            'usuario_creado',
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            'Usuario #' . $id . ' (' . $values['correo'] . ')'
+        );
         Flash::set('success', 'Usuario creado correctamente.');
         $this->redirect('/admin/usuarios');
     }
@@ -106,11 +115,20 @@ final class UsuarioController extends Controller
 
         $activar = (int) $usuario['activo'] !== 1;
         $this->usuarios->setActive($id, $activar);
-        Bitacora::registrar($activar ? 'usuario_activado' : 'usuario_desactivado', 'exito', $this->admin['id'], $this->admin['correo'], 'Usuario #' . $id . ' (' . $usuario['correo'] . ')');
+        Bitacora::registrar(
+            $activar ? 'usuario_activado' : 'usuario_desactivado',
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            'Usuario #' . $id . ' (' . $usuario['correo'] . ')'
+        );
         Flash::set('success', $activar ? 'Usuario activado.' : 'Usuario desactivado. Ya no podrá iniciar sesión.');
         $this->redirect('/admin/usuarios');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function values(): array
     {
         return [
@@ -123,6 +141,10 @@ final class UsuarioController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function validate(array $values, int $id): array
     {
         $errors = [];
@@ -131,7 +153,7 @@ final class UsuarioController extends Controller
             $errors['nombre'] = 'Escribe el nombre (máximo 120 caracteres).';
         }
 
-        if (!filter_var($values['correo'], FILTER_VALIDATE_EMAIL) || mb_strlen($values['correo']) > 150) {
+        if (!$this->validEmail($values['correo'])) {
             $errors['correo'] = 'Escribe un correo válido.';
         } elseif ($this->usuarios->emailExists($values['correo'], $id)) {
             $errors['correo'] = 'Ya existe un usuario con ese correo.';
@@ -156,6 +178,10 @@ final class UsuarioController extends Controller
         return $errors;
     }
 
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $usuario
+     */
     private function form(array $usuario, array $errors = []): void
     {
         $editing = !empty($usuario['id']);

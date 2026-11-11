@@ -11,6 +11,7 @@ final class View
     /**
      * Renderiza app/Views/{template}.php dentro de app/Views/layouts/{layout}.php.
      * Con $layout = null la vista se imprime sola.
+     * @param array<string, mixed> $data
      */
     public static function render(string $template, array $data = [], ?string $layout = 'panel'): void
     {

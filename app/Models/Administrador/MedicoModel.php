@@ -11,8 +11,19 @@ use App\Database;
  */
 final class MedicoModel
 {
-    public const DIAS = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
+    public const DIAS = [
+        1 => 'Lunes',
+        2 => 'Martes',
+        3 => 'Miércoles',
+        4 => 'Jueves',
+        5 => 'Viernes',
+        6 => 'Sábado',
+        7 => 'Domingo',
+    ];
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function all(string $search = '', int $especialidadId = 0, string $estado = ''): array
     {
         $sql = 'SELECT m.id, m.nombre, m.cedula_profesional, m.telefono, m.correo, m.activo, m.usuario_id,
@@ -45,6 +56,9 @@ final class MedicoModel
         return $statement->fetchAll();
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function active(): array
     {
         return Database::connection()->query(
@@ -54,6 +68,9 @@ final class MedicoModel
         )->fetchAll();
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function find(int $id): ?array
     {
         $statement = Database::connection()->prepare(
@@ -69,6 +86,7 @@ final class MedicoModel
 
     /**
      * Cuentas con rol Médico que aún no están vinculadas a otro médico.
+     * @return list<array<string, mixed>>
      */
     public function availableUsers(int $medicoId = 0): array
     {
@@ -98,12 +116,17 @@ final class MedicoModel
 
     public function cedulaExists(string $cedula, int $exceptId = 0): bool
     {
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM medicos WHERE cedula_profesional = :cedula AND id <> :id');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM medicos WHERE cedula_profesional = :cedula AND id <> :id'
+        );
         $statement->execute(['cedula' => $cedula, 'id' => $exceptId]);
 
         return (int) $statement->fetchColumn() > 0;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): int
     {
         $statement = Database::connection()->prepare(
@@ -115,6 +138,9 @@ final class MedicoModel
         return (int) Database::connection()->lastInsertId();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): void
     {
         $statement = Database::connection()->prepare(
@@ -131,6 +157,9 @@ final class MedicoModel
         $statement->execute(['activo' => $active ? 1 : 0, 'id' => $id]);
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function horarios(int $medicoId): array
     {
         $statement = Database::connection()->prepare(
@@ -158,19 +187,26 @@ final class MedicoModel
     public function addHorario(int $medicoId, int $dia, string $inicio, string $fin): void
     {
         $statement = Database::connection()->prepare(
-            'INSERT INTO horarios_medico (medico_id, dia_semana, hora_inicio, hora_fin, activo) VALUES (:medico, :dia, :inicio, :fin, 1)'
+            'INSERT INTO horarios_medico (medico_id, dia_semana, hora_inicio, hora_fin, activo)
+             VALUES (:medico, :dia, :inicio, :fin, 1)'
         );
         $statement->execute(['medico' => $medicoId, 'dia' => $dia, 'inicio' => $inicio, 'fin' => $fin]);
     }
 
     public function removeHorario(int $medicoId, int $horarioId): bool
     {
-        $statement = Database::connection()->prepare('UPDATE horarios_medico SET activo = 0 WHERE id = :id AND medico_id = :medico');
+        $statement = Database::connection()->prepare(
+            'UPDATE horarios_medico SET activo = 0 WHERE id = :id AND medico_id = :medico'
+        );
         $statement->execute(['id' => $horarioId, 'medico' => $medicoId]);
 
         return $statement->rowCount() > 0;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function params(array $data): array
     {
         return [

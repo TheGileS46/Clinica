@@ -32,7 +32,9 @@ final class Bitacora
                 'resultado' => $resultado === 'exito' ? 'exito' : 'fallo',
                 'detalle' => $detalle !== null ? mb_substr($detalle, 0, 255) : null,
                 'ip' => Request::ip(),
-                'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? mb_substr((string) $_SERVER['HTTP_USER_AGENT'], 0, 255) : null,
+                'user_agent' => isset($_SERVER['HTTP_USER_AGENT'])
+                    ? mb_substr((string) $_SERVER['HTTP_USER_AGENT'], 0, 255)
+                    : null,
             ]);
         } catch (Throwable $exception) {
             error_log('Bitácora: ' . $exception->getMessage());

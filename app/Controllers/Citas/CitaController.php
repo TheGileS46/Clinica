@@ -23,6 +23,9 @@ final class CitaController extends Controller
 
     private CitaModel $citas;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $actor;
 
     public function __construct()
@@ -78,13 +81,14 @@ final class CitaController extends Controller
     public function create(): void
     {
         $servicios = (new CatalogoModel('servicios'))->active();
+        $duracion = (int) $this->query('duracion');
 
         $this->form([
             'paciente_id' => (int) $this->query('paciente_id', '0'),
             'medico_id' => (int) $this->query('medico_id', '0'),
             'servicio_id' => (int) $this->query('servicio_id', (string) ($servicios[0]['id'] ?? 0)),
             'fecha' => $this->validDate($this->query('fecha')) ? $this->query('fecha') : date('Y-m-d'),
-            'duracion' => in_array((int) $this->query('duracion'), self::DURACIONES, true) ? (int) $this->query('duracion') : 30,
+            'duracion' => in_array($duracion, self::DURACIONES, true) ? $duracion : 30,
             'hora' => '',
             'motivo' => $this->query('motivo'),
             'observaciones' => '',
@@ -101,8 +105,17 @@ final class CitaController extends Controller
 
             if ($result['ok']) {
                 $cita = $this->citas->find($result['id']);
-                Bitacora::registrar('cita_creada', 'exito', $this->actor['id'], $this->actor['correo'], $this->resumen($cita));
-                Flash::set('success', 'Cita agendada para el ' . fecha($cita['inicio']) . ' con ' . $cita['medico'] . '.');
+                Bitacora::registrar(
+                    'cita_creada',
+                    'exito',
+                    $this->actor['id'],
+                    $this->actor['correo'],
+                    $this->resumen($cita)
+                );
+                Flash::set(
+                    'success',
+                    'Cita agendada para el ' . fecha($cita['inicio']) . ' con ' . $cita['medico'] . '.'
+                );
                 $this->redirect('/citas/ver', ['id' => $result['id']]);
             }
 
@@ -174,12 +187,24 @@ final class CitaController extends Controller
         }
 
         if (!$this->citas->changeStatus((int) $cita['id'], $cita['estado'], $to, $this->actor['id'], $motivo)) {
-            Flash::set('error', 'No es posible pasar la cita de «' . (CitaModel::ESTADOS[$cita['estado']] ?? $cita['estado']) . '» a «' . (CitaModel::ESTADOS[$to] ?? $to) . '».');
+            $desde = CitaModel::ESTADOS[$cita['estado']] ?? $cita['estado'];
+            $hacia = CitaModel::ESTADOS[$to] ?? $to;
+            Flash::set('error', 'No es posible pasar la cita de «' . $desde . '» a «' . $hacia . '».');
             $this->redirect('/citas/ver', ['id' => $cita['id']]);
         }
 
-        $evento = ['confirmada' => 'cita_confirmada', 'completada' => 'cita_completada', 'cancelada' => 'cita_cancelada'][$to];
-        Bitacora::registrar($evento, 'exito', $this->actor['id'], $this->actor['correo'], $this->resumen($cita) . ($motivo !== '' ? ' · ' . $motivo : ''));
+        $evento = [
+            'confirmada' => 'cita_confirmada',
+            'completada' => 'cita_completada',
+            'cancelada' => 'cita_cancelada',
+        ][$to];
+        Bitacora::registrar(
+            $evento,
+            'exito',
+            $this->actor['id'],
+            $this->actor['correo'],
+            $this->resumen($cita) . ($motivo !== '' ? ' · ' . $motivo : '')
+        );
         Flash::set('success', [
             'confirmada' => 'Cita confirmada.',
             'completada' => 'Cita marcada como completada.',
@@ -205,6 +230,9 @@ final class CitaController extends Controller
         echo json_encode(['slots' => $slots], JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function editable(int $id): array
     {
         $cita = $this->citas->find($id) ?? $this->notFound();
@@ -217,6 +245,9 @@ final class CitaController extends Controller
         return $cita;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function values(): array
     {
         return [
@@ -231,6 +262,10 @@ final class CitaController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function validate(array $values): array
     {
         $errors = [];
@@ -277,15 +312,23 @@ final class CitaController extends Controller
     }
 
     /**
+     * @param array<string, mixed> $values
      * @return array{0: string, 1: string}
      */
     private function range(array $values): array
     {
         $inicio = new DateTimeImmutable($values['fecha'] . ' ' . $values['hora']);
 
-        return [$inicio->format('Y-m-d H:i:s'), $inicio->modify('+' . $values['duracion'] . ' minutes')->format('Y-m-d H:i:s')];
+        return [
+            $inicio->format('Y-m-d H:i:s'),
+            $inicio->modify('+' . $values['duracion'] . ' minutes')->format('Y-m-d H:i:s'),
+        ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, mixed>
+     */
     private function payload(array $values): array
     {
         [$inicio, $fin] = $this->range($values);
@@ -302,10 +345,23 @@ final class CitaController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed>|null $cita
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $values
+     */
     private function form(array $values, array $errors = [], ?array $cita = null): void
     {
-        $slots = $values['medico_id'] > 0 && $this->validDate($values['fecha']) && in_array($values['duracion'], self::DURACIONES, true)
-            ? $this->citas->slots($values['medico_id'], $values['fecha'], $values['duracion'], (int) ($values['id'] ?? 0))
+        $puedeConsultar = $values['medico_id'] > 0
+            && $this->validDate($values['fecha'])
+            && in_array($values['duracion'], self::DURACIONES, true);
+        $slots = $puedeConsultar
+            ? $this->citas->slots(
+                $values['medico_id'],
+                $values['fecha'],
+                $values['duracion'],
+                (int) ($values['id'] ?? 0)
+            )
             : [];
 
         $this->render('citas/form', [
@@ -321,8 +377,17 @@ final class CitaController extends Controller
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $cita
+     */
     private function resumen(array $cita): string
     {
-        return 'Cita #' . $cita['id'] . ' · ' . fecha($cita['inicio']) . ' · ' . $cita['medico'] . ' · paciente #' . $cita['paciente_id'];
+        return sprintf(
+            'Cita #%d · %s · %s · paciente #%d',
+            $cita['id'],
+            fecha($cita['inicio']),
+            $cita['medico'],
+            $cita['paciente_id']
+        );
     }
 }

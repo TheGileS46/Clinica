@@ -10,11 +10,17 @@ use RuntimeException;
 
 abstract class Controller
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function render(string $view, array $data = [], ?string $layout = 'panel'): void
     {
         View::render($view, $data, $layout);
     }
 
+    /**
+     * @param array<string, mixed> $query
+     */
     protected function redirect(string $path, array $query = []): never
     {
         header('Location: ' . url($path, $query));
@@ -35,6 +41,9 @@ abstract class Controller
         return is_string($value) ? trim($value) : $default;
     }
 
+    /**
+     * @param array<string, mixed> $source
+     */
     protected function idFrom(array $source, string $key = 'id'): int
     {
         $value = filter_var($source[$key] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -45,6 +54,11 @@ abstract class Controller
     protected function validPhone(string $phone): bool
     {
         return preg_match('/^\+?[0-9 ()-]{7,20}$/', $phone) === 1;
+    }
+
+    protected function validEmail(string $email): bool
+    {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false && mb_strlen($email) <= 150;
     }
 
     protected function validDate(string $date): bool
@@ -59,6 +73,9 @@ abstract class Controller
         throw new RuntimeException('Registro no encontrado.', 404);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function user(): array
     {
         return Auth::user() ?? [];

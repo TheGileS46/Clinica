@@ -16,6 +16,7 @@ if (!function_exists('e')) {
 if (!function_exists('url')) {
     /**
      * URL interna respetando la carpeta base del proyecto.
+     * @param array<string, mixed> $query
      */
     function url(string $path, array $query = []): string
     {

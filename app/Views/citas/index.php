@@ -50,7 +50,7 @@ $query = array_filter($filters);
 </form>
 
 <div class="card mt-6 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Fecha y hora</th>
@@ -67,18 +67,18 @@ $query = array_filter($filters);
             <?php endif; ?>
             <?php foreach ($citas as $cita): ?>
                 <tr>
-                    <td class="whitespace-nowrap">
+                    <td data-label="Fecha y hora" class="whitespace-nowrap">
                         <span class="font-semibold text-primary"><?= e(fecha($cita['inicio'], 'd/m/Y')) ?></span><br>
                         <span class="text-xs text-slate-500"><?= e(fecha($cita['inicio'], 'H:i')) ?>–<?= e(fecha($cita['fin'], 'H:i')) ?></span>
                     </td>
-                    <td>
+                    <td data-label="Paciente">
                         <a href="<?= e(url('/pacientes/ver', ['id' => $cita['paciente_id']])) ?>" class="font-semibold hover:underline"><?= e($cita['paciente']) ?></a><br>
                         <span class="text-xs text-slate-500"><?= e($cita['paciente_telefono']) ?></span>
                     </td>
-                    <td><?= e($cita['medico']) ?><br><span class="text-xs text-slate-500"><?= e($cita['especialidad']) ?></span></td>
-                    <td class="text-slate-600"><?= e($cita['servicio'] ?? '—') ?></td>
-                    <td><?php $badge($cita['estado']); ?></td>
-                    <td class="text-right"><a href="<?= e(url('/citas/ver', ['id' => $cita['id']])) ?>" class="btn-link">Ver</a></td>
+                    <td data-label="Médico"><?= e($cita['medico']) ?><br><span class="text-xs text-slate-500"><?= e($cita['especialidad']) ?></span></td>
+                    <td data-label="Servicio" class="text-slate-600"><?= e($cita['servicio'] ?? '—') ?></td>
+                    <td data-label="Estado"><?php $badge($cita['estado']); ?></td>
+                    <td data-label="Acciones" class="text-right"><a href="<?= e(url('/citas/ver', ['id' => $cita['id']])) ?>" class="btn-link">Ver</a></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

@@ -32,6 +32,9 @@ final class Auth
         session_start();
     }
 
+    /**
+     * @param array<string, mixed> $user
+     */
     public static function login(array $user): void
     {
         self::start();
@@ -55,7 +58,7 @@ final class Auth
                 'domain' => $params['domain'],
                 'secure' => $params['secure'],
                 'httponly' => $params['httponly'],
-                'samesite' => $params['samesite'] ?? 'Lax',
+                'samesite' => $params['samesite'],
             ]);
         }
 
@@ -90,6 +93,9 @@ final class Auth
         return false;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public static function user(): ?array
     {
         self::start();
@@ -102,6 +108,7 @@ final class Auth
     /**
      * RF02.3: exige sesión y uno de los roles indicados. El usuario se vuelve a leer
      * de la base para aplicar al momento desactivaciones o cambios de rol.
+     * @return array<string, mixed>
      */
     public static function requireRole(string ...$roles): array
     {
@@ -114,7 +121,13 @@ final class Auth
         $fresh = (new UserModel())->findActiveById((int) $user['id']);
 
         if ($fresh === null) {
-            Bitacora::registrar('acceso_denegado', 'fallo', (int) $user['id'], (string) $user['correo'], 'Cuenta inactiva o eliminada');
+            Bitacora::registrar(
+                'acceso_denegado',
+                'fallo',
+                (int) $user['id'],
+                (string) $user['correo'],
+                'Cuenta inactiva o eliminada'
+            );
             self::logout();
             Flash::set('error', 'Tu cuenta ya no está activa. Contacta al administrador.');
             self::redirect('/login');
@@ -174,6 +187,10 @@ final class Auth
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $user
+     * @return array<string, mixed>
+     */
     private static function sessionData(array $user): array
     {
         return [
@@ -182,9 +199,7 @@ final class Auth
             'correo' => (string) $user['correo'],
             'rol_id' => (int) $user['rol_id'],
             'rol' => (string) $user['rol'],
-            'medico_id' => isset($user['medico_id']) && $user['medico_id'] !== null
-                ? (int) $user['medico_id']
-                : null,
+            'medico_id' => isset($user['medico_id']) ? (int) $user['medico_id'] : null,
         ];
     }
 

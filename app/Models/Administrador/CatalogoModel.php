@@ -21,6 +21,9 @@ final class CatalogoModel
         }
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function all(string $search = ''): array
     {
         $sql = 'SELECT c.id, c.nombre, c.descripcion, c.activo' . $this->usageColumn() . ' FROM ' . $this->table . ' c';
@@ -37,6 +40,9 @@ final class CatalogoModel
         return $statement->fetchAll();
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function active(): array
     {
         return Database::connection()
@@ -44,9 +50,14 @@ final class CatalogoModel
             ->fetchAll();
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function find(int $id): ?array
     {
-        $statement = Database::connection()->prepare('SELECT id, nombre, descripcion, activo FROM ' . $this->table . ' WHERE id = :id');
+        $statement = Database::connection()->prepare(
+            'SELECT id, nombre, descripcion, activo FROM ' . $this->table . ' WHERE id = :id'
+        );
         $statement->execute(['id' => $id]);
         $row = $statement->fetch();
 
@@ -55,7 +66,9 @@ final class CatalogoModel
 
     public function isActive(int $id): bool
     {
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM ' . $this->table . ' WHERE id = :id AND activo = 1');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM ' . $this->table . ' WHERE id = :id AND activo = 1'
+        );
         $statement->execute(['id' => $id]);
 
         return (int) $statement->fetchColumn() > 0;
@@ -63,12 +76,17 @@ final class CatalogoModel
 
     public function nameExists(string $name, int $exceptId = 0): bool
     {
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM ' . $this->table . ' WHERE nombre = :nombre AND id <> :id');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM ' . $this->table . ' WHERE nombre = :nombre AND id <> :id'
+        );
         $statement->execute(['nombre' => $name, 'id' => $exceptId]);
 
         return (int) $statement->fetchColumn() > 0;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): int
     {
         $statement = Database::connection()->prepare(
@@ -79,6 +97,9 @@ final class CatalogoModel
         return (int) Database::connection()->lastInsertId();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): void
     {
         $statement = Database::connection()->prepare(

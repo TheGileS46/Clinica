@@ -20,6 +20,9 @@ final class MedicoController extends Controller
 
     private CatalogoModel $especialidades;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $admin;
 
     public function __construct()
@@ -47,7 +50,14 @@ final class MedicoController extends Controller
 
     public function create(): void
     {
-        $this->form(['nombre' => '', 'especialidad_id' => 0, 'usuario_id' => 0, 'cedula_profesional' => '', 'telefono' => '', 'correo' => '']);
+        $this->form([
+            'nombre' => '',
+            'especialidad_id' => 0,
+            'usuario_id' => 0,
+            'cedula_profesional' => '',
+            'telefono' => '',
+            'correo' => '',
+        ]);
     }
 
     public function store(): void
@@ -61,7 +71,13 @@ final class MedicoController extends Controller
         }
 
         $id = $this->medicos->create($values);
-        Bitacora::registrar('medico_creado', 'exito', $this->admin['id'], $this->admin['correo'], '#' . $id . ' ' . $values['nombre']);
+        Bitacora::registrar(
+            'medico_creado',
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            '#' . $id . ' ' . $values['nombre']
+        );
         Flash::set('success', 'Médico registrado. Ahora define sus horarios de atención.');
         $this->redirect('/admin/medicos/horarios', ['id' => $id]);
     }
@@ -85,7 +101,13 @@ final class MedicoController extends Controller
         }
 
         $this->medicos->update($id, $values);
-        Bitacora::registrar('medico_actualizado', 'exito', $this->admin['id'], $this->admin['correo'], '#' . $id . ' ' . $values['nombre']);
+        Bitacora::registrar(
+            'medico_actualizado',
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            '#' . $id . ' ' . $values['nombre']
+        );
         Flash::set('success', 'Datos del médico actualizados.');
         $this->redirect('/admin/medicos');
     }
@@ -97,8 +119,17 @@ final class MedicoController extends Controller
         $activar = (int) $medico['activo'] !== 1;
 
         $this->medicos->setActive($id, $activar);
-        Bitacora::registrar($activar ? 'medico_activado' : 'medico_desactivado', 'exito', $this->admin['id'], $this->admin['correo'], '#' . $id . ' ' . $medico['nombre']);
-        Flash::set('success', $activar ? 'Médico activado.' : 'Médico desactivado. Ya no estará disponible para nuevas citas.');
+        Bitacora::registrar(
+            $activar ? 'medico_activado' : 'medico_desactivado',
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            '#' . $id . ' ' . $medico['nombre']
+        );
+        Flash::set(
+            'success',
+            $activar ? 'Médico activado.' : 'Médico desactivado. Ya no estará disponible para nuevas citas.'
+        );
         $this->redirect('/admin/medicos');
     }
 
@@ -131,7 +162,8 @@ final class MedicoController extends Controller
         }
 
         if ($errors !== []) {
-            $this->renderHorarios($medico, $errors, ['dia_semana' => $dia, 'hora_inicio' => $inicio, 'hora_fin' => $fin]);
+            $old = ['dia_semana' => $dia, 'hora_inicio' => $inicio, 'hora_fin' => $fin];
+            $this->renderHorarios($medico, $errors, $old);
             return;
         }
 
@@ -151,6 +183,11 @@ final class MedicoController extends Controller
         $this->redirect('/admin/medicos/horarios', ['id' => $medico['id']]);
     }
 
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $medico
+     * @param array<string, mixed> $old
+     */
     private function renderHorarios(array $medico, array $errors = [], array $old = []): void
     {
         $this->render('admin/medicos/horarios', [
@@ -163,6 +200,9 @@ final class MedicoController extends Controller
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function values(): array
     {
         return [
@@ -175,6 +215,10 @@ final class MedicoController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function validate(array $values, int $id, int $currentEspecialidad): array
     {
         $errors = [];
@@ -184,7 +228,9 @@ final class MedicoController extends Controller
         }
 
         // Se permite conservar una especialidad que se desactivó después, pero no asignar una inactiva.
-        if (!$this->especialidades->isActive($values['especialidad_id']) && $values['especialidad_id'] !== $currentEspecialidad) {
+        $conservaActual = $values['especialidad_id'] === $currentEspecialidad;
+
+        if (!$conservaActual && !$this->especialidades->isActive($values['especialidad_id'])) {
             $errors['especialidad_id'] = 'Selecciona una especialidad activa.';
         }
 
@@ -204,13 +250,17 @@ final class MedicoController extends Controller
             $errors['telefono'] = 'Teléfono no válido (7 a 20 dígitos).';
         }
 
-        if ($values['correo'] !== '' && (!filter_var($values['correo'], FILTER_VALIDATE_EMAIL) || mb_strlen($values['correo']) > 150)) {
+        if ($values['correo'] !== '' && !$this->validEmail($values['correo'])) {
             $errors['correo'] = 'Correo no válido.';
         }
 
         return $errors;
     }
 
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $medico
+     */
     private function form(array $medico, array $errors = []): void
     {
         $editing = !empty($medico['id']);

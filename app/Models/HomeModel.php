@@ -6,12 +6,16 @@ namespace App\Models;
 
 final class HomeModel
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function welcome(): array
     {
         return [
             'brand' => 'Clínica',
             'title' => 'Atención médica clara, cercana y oportuna.',
-            'message' => 'Conoce nuestros servicios, encuentra la información que necesitas y solicita tu cita por WhatsApp.',
+            'message' => 'Conoce nuestros servicios, encuentra la información que necesitas '
+                . 'y solicita tu cita por WhatsApp.',
             'environment' => getenv('APP_ENV') ?: 'production',
             'whatsapp' => '523320705080',
             'phone' => '33 2070 5080',
@@ -20,19 +24,22 @@ final class HomeModel
                 [
                     'number' => '01',
                     'title' => 'Consulta médica',
-                    'description' => 'Recibe orientación para identificar el tipo de atención que necesitas y los siguientes pasos.',
+                    'description' => 'Recibe orientación para identificar el tipo de atención que necesitas '
+                        . 'y los siguientes pasos.',
                     'image' => 'conulta_medica.png',
                 ],
                 [
                     'number' => '02',
                     'title' => 'Seguimiento',
-                    'description' => 'Da continuidad a tu atención con información clara y comunicación cercana con la clínica.',
+                    'description' => 'Da continuidad a tu atención con información clara '
+                        . 'y comunicación cercana con la clínica.',
                     'image' => 'Medicos_ayudando.png',
                 ],
                 [
                     'number' => '03',
                     'title' => 'Agenda por WhatsApp',
-                    'description' => 'Solicita información sobre disponibilidad, requisitos y confirmación de tu cita.',
+                    'description' => 'Solicita información sobre disponibilidad, requisitos '
+                        . 'y confirmación de tu cita.',
                     'image' => 'recepcionista.png',
                 ],
             ],

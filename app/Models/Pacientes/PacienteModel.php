@@ -14,7 +14,7 @@ final class PacienteModel
     public const PER_PAGE = 25;
 
     /**
-     * @return array{rows: array, total: int}
+     * @return array{rows: list<array<string, mixed>>, total: int}
      */
     public function search(string $search, string $estado, int $page): array
     {
@@ -22,7 +22,8 @@ final class PacienteModel
         $params = [];
 
         if ($search !== '') {
-            $where[] = "(CONCAT(p.nombre, ' ', p.apellidos) LIKE :q1 OR p.telefono LIKE :q2 OR p.correo LIKE :q3 OR p.curp_dni LIKE :q4)";
+            $where[] = "(CONCAT(p.nombre, ' ', p.apellidos) LIKE :q1 OR p.telefono LIKE :q2
+                OR p.correo LIKE :q3 OR p.curp_dni LIKE :q4)";
             $params['q1'] = $params['q2'] = $params['q3'] = $params['q4'] = '%' . $search . '%';
         }
 
@@ -48,6 +49,9 @@ final class PacienteModel
         return ['rows' => $statement->fetchAll(), 'total' => (int) $count->fetchColumn()];
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function find(int $id): ?array
     {
         $statement = Database::connection()->prepare('SELECT * FROM pacientes WHERE id = :id');
@@ -59,12 +63,17 @@ final class PacienteModel
 
     public function curpExists(string $curp, int $exceptId = 0): bool
     {
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM pacientes WHERE curp_dni = :curp AND id <> :id');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM pacientes WHERE curp_dni = :curp AND id <> :id'
+        );
         $statement->execute(['curp' => $curp, 'id' => $exceptId]);
 
         return (int) $statement->fetchColumn() > 0;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): int
     {
         $statement = Database::connection()->prepare(
@@ -76,6 +85,9 @@ final class PacienteModel
         return (int) Database::connection()->lastInsertId();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): void
     {
         $statement = Database::connection()->prepare(
@@ -92,6 +104,10 @@ final class PacienteModel
         $statement->execute(['activo' => $active ? 1 : 0, 'id' => $id]);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function params(array $data): array
     {
         return [

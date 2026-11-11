@@ -91,3 +91,52 @@
     @apply bg-accent/10 text-accent;
   }
 }
+
+/* H-07 · RNF03.1: en pantallas < 640 px cada fila de tabla se muestra como tarjeta apilada.
+   Cada <td> lleva data-label con el encabezado de su columna. */
+@layer components {
+  @media (max-width: 639px) {
+    .table-stack thead {
+      @apply sr-only;
+    }
+
+    .table-stack,
+    .table-stack tbody,
+    .table-stack tr,
+    .table-stack td {
+      @apply block w-full;
+    }
+
+    .table-stack tr {
+      @apply border-b border-primary/10 px-4 py-3;
+    }
+
+    .table-stack td {
+      @apply border-0 px-0 py-1 text-right;
+    }
+
+    .table-stack td::after {
+      content: "";
+      @apply block clear-both;
+    }
+
+    .table-stack td::before {
+      content: attr(data-label);
+      @apply float-left mr-4 pt-0.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-500;
+    }
+
+    .table-stack td > div {
+      @apply inline-flex;
+    }
+
+    .table-stack td:not([data-label])::before,
+    .table-stack td[colspan]::before {
+      content: none;
+    }
+
+    .table-stack td[colspan],
+    .table-stack td:not([data-label]) {
+      @apply text-center;
+    }
+  }
+}

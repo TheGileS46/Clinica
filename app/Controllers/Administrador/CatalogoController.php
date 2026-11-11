@@ -17,6 +17,9 @@ abstract class CatalogoController extends Controller
 {
     protected CatalogoModel $model;
 
+    /**
+     * @var array<string, mixed>
+     */
     protected array $admin;
 
     /** @return array{table: string, path: string, title: string, singular: string, evento: string, usage: ?string} */
@@ -93,10 +96,16 @@ abstract class CatalogoController extends Controller
 
         $this->model->setActive($id, $activar);
         $this->log($activar ? 'activado' : 'desactivado', $id, $row['nombre']);
-        Flash::set('success', $activar ? 'Registro activado.' : 'Registro desactivado. Ya no aparecerá en las nuevas capturas.');
+        Flash::set(
+            'success',
+            $activar ? 'Registro activado.' : 'Registro desactivado. Ya no aparecerá en las nuevas capturas.'
+        );
         $this->redirect($this->config()['path']);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function values(): array
     {
         return [
@@ -105,6 +114,10 @@ abstract class CatalogoController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function validate(array $values, int $id): array
     {
         $errors = [];
@@ -122,6 +135,10 @@ abstract class CatalogoController extends Controller
         return $errors;
     }
 
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $row
+     */
     private function form(array $row, array $errors = []): void
     {
         $editing = !empty($row['id']);
@@ -137,6 +154,12 @@ abstract class CatalogoController extends Controller
 
     private function log(string $accion, int $id, string $nombre): void
     {
-        Bitacora::registrar($this->config()['evento'] . '_' . $accion, 'exito', $this->admin['id'], $this->admin['correo'], '#' . $id . ' ' . $nombre);
+        Bitacora::registrar(
+            $this->config()['evento'] . '_' . $accion,
+            'exito',
+            $this->admin['id'],
+            $this->admin['correo'],
+            '#' . $id . ' ' . $nombre
+        );
     }
 }

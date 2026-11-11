@@ -67,7 +67,7 @@ $label = static fn (string $evento): string => $labels[$evento] ?? ucfirst(str_r
 <p class="mt-6 text-sm text-slate-500"><?= number_format($total) ?> registro(s)</p>
 
 <div class="card mt-2 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Fecha</th>
@@ -84,15 +84,15 @@ $label = static fn (string $evento): string => $labels[$evento] ?? ucfirst(str_r
             <?php endif; ?>
             <?php foreach ($rows as $row): ?>
                 <tr>
-                    <td class="whitespace-nowrap text-slate-600"><?= e(fecha($row['created_at'], 'd/m/Y H:i:s')) ?></td>
-                    <td class="font-semibold text-primary"><?= e($label($row['evento'])) ?></td>
-                    <td><span class="badge <?= $row['resultado'] === 'exito' ? 'badge-ok' : 'badge-danger' ?>"><?= $row['resultado'] === 'exito' ? 'Éxito' : 'Fallo' ?></span></td>
-                    <td>
+                    <td data-label="Fecha" class="whitespace-nowrap text-slate-600"><?= e(fecha($row['created_at'], 'd/m/Y H:i:s')) ?></td>
+                    <td data-label="Evento" class="font-semibold text-primary"><?= e($label($row['evento'])) ?></td>
+                    <td data-label="Resultado"><span class="badge <?= $row['resultado'] === 'exito' ? 'badge-ok' : 'badge-danger' ?>"><?= $row['resultado'] === 'exito' ? 'Éxito' : 'Fallo' ?></span></td>
+                    <td data-label="Usuario / correo">
                         <?php if ($row['usuario']): ?><span class="font-semibold"><?= e($row['usuario']) ?></span><br><?php endif; ?>
                         <span class="text-xs text-slate-500"><?= e($row['correo'] ?? '—') ?></span>
                     </td>
-                    <td class="text-slate-600"><?= e($row['detalle'] ?? '') ?></td>
-                    <td class="whitespace-nowrap text-xs text-slate-500"><?= e($row['ip'] ?? '') ?></td>
+                    <td data-label="Detalle" class="text-slate-600"><?= e($row['detalle'] ?? '') ?></td>
+                    <td data-label="IP" class="whitespace-nowrap text-xs text-slate-500"><?= e($row['ip'] ?? '') ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

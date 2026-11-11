@@ -48,7 +48,7 @@ $anteriores = array_values(array_filter($citas, static fn (array $c): bool => $c
     <section class="card mt-6 p-0 sm:p-0">
         <h2 class="px-5 pt-5 text-lg font-black text-primary sm:px-6"><?= e($titulo) ?> <span class="text-sm font-semibold text-slate-400">(<?= count($grupo) ?>)</span></h2>
         <div class="mt-3 overflow-x-auto">
-            <table class="table">
+            <table class="table table-stack">
                 <thead><tr><th>Fecha y hora</th><th>Médico</th><th>Servicio</th><th>Estado</th><th></th></tr></thead>
                 <tbody>
                     <?php if ($grupo === []): ?>
@@ -56,10 +56,10 @@ $anteriores = array_values(array_filter($citas, static fn (array $c): bool => $c
                     <?php endif; ?>
                     <?php foreach ($grupo as $cita): ?>
                         <tr>
-                            <td class="whitespace-nowrap font-semibold text-primary"><?= e(fecha($cita['inicio'])) ?></td>
-                            <td><?= e($cita['medico']) ?></td>
-                            <td class="text-slate-600"><?= e($cita['servicio'] ?? '—') ?></td>
-                            <td><?php $estado = $cita['estado']; require dirname(__DIR__) . '/citas/partials/estado.php'; ?></td>
+                            <td data-label="Fecha y hora" class="whitespace-nowrap font-semibold text-primary"><?= e(fecha($cita['inicio'])) ?></td>
+                            <td data-label="Médico"><?= e($cita['medico']) ?></td>
+                            <td data-label="Servicio" class="text-slate-600"><?= e($cita['servicio'] ?? '—') ?></td>
+                            <td data-label="Estado"><?php $estado = $cita['estado']; require dirname(__DIR__) . '/citas/partials/estado.php'; ?></td>
                             <td class="text-right"><a class="btn-link" href="<?= e(url('/citas/ver', ['id' => $cita['id']])) ?>">Ver</a></td>
                         </tr>
                     <?php endforeach; ?>

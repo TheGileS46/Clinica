@@ -8,6 +8,9 @@ use App\Database;
 
 final class UsuarioModel
 {
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function all(string $search = '', string $estado = ''): array
     {
         $sql = 'SELECT u.id, u.nombre, u.correo, u.activo, u.rol_id, u.created_at, r.nombre AS rol, m.id AS medico_id
@@ -33,6 +36,9 @@ final class UsuarioModel
         return $statement->fetchAll();
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function find(int $id): ?array
     {
         $statement = Database::connection()->prepare(
@@ -46,6 +52,9 @@ final class UsuarioModel
         return $user === false ? null : $user;
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function roles(): array
     {
         return Database::connection()->query('SELECT id, nombre FROM roles ORDER BY id')->fetchAll();
@@ -62,12 +71,17 @@ final class UsuarioModel
 
     public function emailExists(string $email, int $exceptId = 0): bool
     {
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM usuarios WHERE correo = :correo AND id <> :id');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM usuarios WHERE correo = :correo AND id <> :id'
+        );
         $statement->execute(['correo' => $email, 'id' => $exceptId]);
 
         return (int) $statement->fetchColumn() > 0;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): int
     {
         $statement = Database::connection()->prepare(
@@ -85,6 +99,9 @@ final class UsuarioModel
         return (int) Database::connection()->lastInsertId();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): void
     {
         $fields = 'nombre = :nombre, correo = :correo, rol_id = :rol_id';

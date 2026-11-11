@@ -6,6 +6,10 @@ namespace App\Models\Recepcion;
 
 final class RecepcionModel
 {
+    /**
+     * @param array<string, mixed> $user
+     * @return array<string, mixed>
+     */
     public function dashboard(array $user): array
     {
         return [
@@ -13,8 +17,16 @@ final class RecepcionModel
             'title' => 'Panel de recepción',
             'message' => 'Este será tu espacio para coordinar pacientes, citas y solicitudes de atención.',
             'actions' => [
-                ['title' => 'Pacientes', 'description' => 'Registrar y consultar información de contacto.', 'path' => '/pacientes'],
-                ['title' => 'Citas', 'description' => 'Agendar, confirmar, reprogramar y cancelar citas.', 'path' => '/citas'],
+                [
+                    'title' => 'Pacientes',
+                    'description' => 'Registrar y consultar información de contacto.',
+                    'path' => '/pacientes',
+                ],
+                [
+                    'title' => 'Citas',
+                    'description' => 'Agendar, confirmar, reprogramar y cancelar citas.',
+                    'path' => '/citas',
+                ],
                 ['title' => 'Solicitudes', 'description' => 'Atender los mensajes recibidos desde el sitio público.'],
             ],
         ];

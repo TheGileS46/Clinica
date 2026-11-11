@@ -24,7 +24,7 @@
 </form>
 
 <div class="card mt-6 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Paciente</th>
@@ -41,17 +41,17 @@
             <?php endif; ?>
             <?php foreach ($pacientes as $paciente): ?>
                 <tr>
-                    <td>
+                    <td data-label="Paciente">
                         <a href="<?= e(url('/pacientes/ver', ['id' => $paciente['id']])) ?>" class="font-semibold text-primary hover:underline">
                             <?= e($paciente['apellidos'] . ', ' . $paciente['nombre']) ?>
                         </a>
                         <?php if ($paciente['curp_dni']): ?><br><span class="text-xs text-slate-500"><?= e($paciente['curp_dni']) ?></span><?php endif; ?>
                     </td>
-                    <td class="whitespace-nowrap"><?= e($paciente['telefono']) ?></td>
-                    <td class="text-slate-600"><?= e($paciente['correo'] ?? '') ?></td>
-                    <td class="whitespace-nowrap"><?= e(fecha($paciente['fecha_nacimiento'], 'd/m/Y')) ?></td>
-                    <td><span class="badge <?= (int) $paciente['activo'] === 1 ? 'badge-ok' : 'badge-off' ?>"><?= (int) $paciente['activo'] === 1 ? 'Activo' : 'Inactivo' ?></span></td>
-                    <td class="text-right whitespace-nowrap">
+                    <td data-label="Teléfono" class="whitespace-nowrap"><?= e($paciente['telefono']) ?></td>
+                    <td data-label="Correo" class="text-slate-600"><?= e($paciente['correo'] ?? '') ?></td>
+                    <td data-label="Nacimiento" class="whitespace-nowrap"><?= e(fecha($paciente['fecha_nacimiento'], 'd/m/Y')) ?></td>
+                    <td data-label="Estado"><span class="badge <?= (int) $paciente['activo'] === 1 ? 'badge-ok' : 'badge-off' ?>"><?= (int) $paciente['activo'] === 1 ? 'Activo' : 'Inactivo' ?></span></td>
+                    <td data-label="Acciones" class="text-right whitespace-nowrap">
                         <a href="<?= e(url('/pacientes/ver', ['id' => $paciente['id']])) ?>" class="btn-link">Ver ficha</a>
                         <a href="<?= e(url('/pacientes/editar', ['id' => $paciente['id']])) ?>" class="btn-link">Editar</a>
                     </td>

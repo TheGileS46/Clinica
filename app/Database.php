@@ -34,7 +34,11 @@ final class Database
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $exception) {
-            throw new PDOException('No fue posible conectar con la base de datos.', (int) $exception->getCode(), $exception);
+            throw new PDOException(
+                'No fue posible conectar con la base de datos.',
+                (int) $exception->getCode(),
+                $exception
+            );
         }
 
         return self::$connection;

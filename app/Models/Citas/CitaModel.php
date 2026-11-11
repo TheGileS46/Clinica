@@ -39,7 +39,8 @@ final class CitaModel
     ];
 
     private const SELECT = "SELECT c.*,
-            CONCAT(p.nombre, ' ', p.apellidos) AS paciente, p.telefono AS paciente_telefono, p.activo AS paciente_activo,
+            CONCAT(p.nombre, ' ', p.apellidos) AS paciente,
+            p.telefono AS paciente_telefono, p.activo AS paciente_activo,
             m.nombre AS medico, e.nombre AS especialidad, s.nombre AS servicio,
             uc.nombre AS creado_por_nombre, ux.nombre AS cancelada_por_nombre
         FROM citas c
@@ -51,7 +52,8 @@ final class CitaModel
         LEFT JOIN usuarios ux ON ux.id = c.cancelada_por";
 
     /**
-     * @return array{rows: array, total: int}
+     * @param array<string, mixed> $filters
+     * @return array{rows: list<array<string, mixed>>, total: int}
      */
     public function search(array $filters, int $page): array
     {
@@ -86,7 +88,9 @@ final class CitaModel
         $whereSql = implode(' AND ', $where);
         $db = Database::connection();
 
-        $count = $db->prepare('SELECT COUNT(*) FROM citas c INNER JOIN pacientes p ON p.id = c.paciente_id WHERE ' . $whereSql);
+        $count = $db->prepare(
+            'SELECT COUNT(*) FROM citas c INNER JOIN pacientes p ON p.id = c.paciente_id WHERE ' . $whereSql
+        );
         $count->execute($params);
 
         $statement = $db->prepare(
@@ -98,6 +102,9 @@ final class CitaModel
         return ['rows' => $statement->fetchAll(), 'total' => (int) $count->fetchColumn()];
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function find(int $id): ?array
     {
         $statement = Database::connection()->prepare(self::SELECT . ' WHERE c.id = :id');
@@ -109,19 +116,26 @@ final class CitaModel
 
     /**
      * RF03.3: citas de un paciente, de la más reciente a la más antigua.
+     * @return list<array<string, mixed>>
      */
     public function forPaciente(int $pacienteId): array
     {
-        $statement = Database::connection()->prepare(self::SELECT . ' WHERE c.paciente_id = :paciente ORDER BY c.inicio DESC');
+        $statement = Database::connection()->prepare(
+            self::SELECT . ' WHERE c.paciente_id = :paciente ORDER BY c.inicio DESC'
+        );
         $statement->execute(['paciente' => $pacienteId]);
 
         return $statement->fetchAll();
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function pacientesActivos(): array
     {
         return Database::connection()->query(
-            "SELECT id, CONCAT(apellidos, ', ', nombre) AS nombre, telefono FROM pacientes WHERE activo = 1 ORDER BY apellidos, nombre"
+            "SELECT id, CONCAT(apellidos, ', ', nombre) AS nombre, telefono
+             FROM pacientes WHERE activo = 1 ORDER BY apellidos, nombre"
         )->fetchAll();
     }
 
@@ -131,7 +145,9 @@ final class CitaModel
             return false;
         }
 
-        $statement = Database::connection()->prepare('SELECT COUNT(*) FROM ' . $table . ' WHERE id = :id AND activo = 1');
+        $statement = Database::connection()->prepare(
+            'SELECT COUNT(*) FROM ' . $table . ' WHERE id = :id AND activo = 1'
+        );
         $statement->execute(['id' => $id]);
 
         return (int) $statement->fetchColumn() > 0;
@@ -158,8 +174,10 @@ final class CitaModel
             $start = new DateTimeImmutable($fecha . ' ' . $block['hora_inicio']);
             $end = new DateTimeImmutable($fecha . ' ' . $block['hora_fin']);
 
-            for ($slot = $start; $slot->modify('+' . $duracion . ' minutes') <= $end; $slot = $slot->modify('+' . $duracion . ' minutes')) {
-                $slotEnd = $slot->modify('+' . $duracion . ' minutes');
+            $paso = '+' . $duracion . ' minutes';
+
+            for ($slot = $start; $slot->modify($paso) <= $end; $slot = $slot->modify($paso)) {
+                $slotEnd = $slot->modify($paso);
 
                 if ($slot <= $now) {
                     continue;
@@ -205,6 +223,7 @@ final class CitaModel
      * (RNF04.1). Devuelve el id de la cita o un mensaje de error.
      *
      * @return array{ok: bool, id?: int, error?: string}
+     * @param array<string, mixed> $data
      */
     public function save(array $data, int $citaId = 0): array
     {
@@ -234,8 +253,10 @@ final class CitaModel
 
             if ($citaId === 0) {
                 $statement = $db->prepare(
-                    'INSERT INTO citas (paciente_id, medico_id, servicio_id, inicio, fin, estado, motivo, observaciones, creado_por)
-                     VALUES (:paciente_id, :medico_id, :servicio_id, :inicio, :fin, :estado, :motivo, :observaciones, :creado_por)'
+                    'INSERT INTO citas (paciente_id, medico_id, servicio_id, inicio, fin, estado, motivo,
+                        observaciones, creado_por)
+                     VALUES (:paciente_id, :medico_id, :servicio_id, :inicio, :fin, :estado, :motivo,
+                        :observaciones, :creado_por)'
                 );
                 $statement->execute([
                     'paciente_id' => $data['paciente_id'],
@@ -316,6 +337,9 @@ final class CitaModel
         return (int) $statement->fetchColumn() > 0;
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     private function blocks(int $medicoId, int $weekday): array
     {
         $statement = Database::connection()->prepare(
@@ -346,7 +370,10 @@ final class CitaModel
         ]);
 
         return array_map(
-            static fn (array $row): array => [new DateTimeImmutable($row['inicio']), new DateTimeImmutable($row['fin'])],
+            static fn (array $row): array => [
+                new DateTimeImmutable($row['inicio']),
+                new DateTimeImmutable($row['fin']),
+            ],
             $statement->fetchAll(PDO::FETCH_ASSOC)
         );
     }

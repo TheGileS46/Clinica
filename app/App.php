@@ -16,8 +16,14 @@ final class App
 {
     private static bool $booted = false;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $config;
 
+    /**
+     * @var list<array{0: string, 1: string, 2: array{0: class-string, 1: string}}>
+     */
     private array $routes;
 
     public function __construct()
@@ -44,6 +50,9 @@ final class App
         $config = require __DIR__ . '/config/app.php';
         date_default_timezone_set($config['timezone']);
 
+        // H-06 · OR-02: las trazas de excepciones no incluyen argumentos (correos, CURP, etc.).
+        ini_set('zend.exception_ignore_args', '1');
+
         self::$booted = true;
     }
 
@@ -61,7 +70,13 @@ final class App
             }
 
             if ($method === 'POST' && !Csrf::verify($_POST['_token'] ?? null)) {
-                Bitacora::registrar('csrf_invalido', 'fallo', Auth::user()['id'] ?? null, Auth::user()['correo'] ?? null, $path);
+                Bitacora::registrar(
+                    'csrf_invalido',
+                    'fallo',
+                    Auth::user()['id'] ?? null,
+                    Auth::user()['correo'] ?? null,
+                    $path
+                );
                 Flash::set('error', 'El formulario expiró. Intenta de nuevo.');
                 header('Location: ' . Auth::route($path) . Request::queryString());
                 exit;
@@ -75,6 +90,8 @@ final class App
 
     private function dispatch(string $method, string $path): void
     {
+        // HEAD se atiende como GET; Apache descarta el cuerpo de la respuesta (RFC 9110 §9.3.2).
+        $method = $method === 'HEAD' ? 'GET' : $method;
         $allowed = [];
 
         foreach ($this->routes as [$routeMethod, $routePath, $handler]) {
@@ -109,7 +126,16 @@ final class App
         header('X-Frame-Options: SAMEORIGIN');
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'");
+        header('Content-Security-Policy: ' . implode('; ', [
+            "default-src 'self'",
+            "img-src 'self' data:",
+            "script-src 'self'",
+            "style-src 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+        ]));
     }
 
     private function renderError(Throwable $exception): void

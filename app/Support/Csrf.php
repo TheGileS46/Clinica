@@ -24,7 +24,9 @@ final class Csrf
 
     public static function field(): string
     {
-        return '<input type="hidden" name="_token" value="' . htmlspecialchars(self::token(), ENT_QUOTES, 'UTF-8') . '">';
+        $token = htmlspecialchars(self::token(), ENT_QUOTES, 'UTF-8');
+
+        return '<input type="hidden" name="_token" value="' . $token . '">';
     }
 
     public static function verify(mixed $token): bool

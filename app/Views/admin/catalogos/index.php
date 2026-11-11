@@ -15,7 +15,7 @@
 </form>
 
 <div class="card mt-6 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -32,11 +32,11 @@
             <?php foreach ($rows as $row): ?>
                 <?php $active = (int) $row['activo'] === 1; ?>
                 <tr>
-                    <td class="font-semibold text-primary"><?= e($row['nombre']) ?></td>
-                    <td class="text-slate-600"><?= e($row['descripcion'] ?? '') ?></td>
-                    <?php if ($config['usage']): ?><td><?= (int) $row['en_uso'] ?></td><?php endif; ?>
-                    <td><span class="badge <?= $active ? 'badge-ok' : 'badge-off' ?>"><?= $active ? 'Activo' : 'Inactivo' ?></span></td>
-                    <td>
+                    <td data-label="Nombre" class="font-semibold text-primary"><?= e($row['nombre']) ?></td>
+                    <td data-label="Descripción" class="text-slate-600"><?= e($row['descripcion'] ?? '') ?></td>
+                    <?php if ($config['usage']): ?><td data-label="<?= e($config['usage']) ?>"><?= (int) $row['en_uso'] ?></td><?php endif; ?>
+                    <td data-label="Estado"><span class="badge <?= $active ? 'badge-ok' : 'badge-off' ?>"><?= $active ? 'Activo' : 'Inactivo' ?></span></td>
+                    <td data-label="Acciones">
                         <div class="flex items-center justify-end gap-2">
                             <a href="<?= e(url($config['path'] . '/editar', ['id' => $row['id']])) ?>" class="btn-link">Editar</a>
                             <form method="post" action="<?= e(url($config['path'] . '/estado')) ?>"

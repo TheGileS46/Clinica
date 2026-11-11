@@ -33,7 +33,7 @@
 </form>
 
 <div class="card mt-6 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Médico</th>
@@ -52,13 +52,13 @@
             <?php foreach ($medicos as $medico): ?>
                 <?php $active = (int) $medico['activo'] === 1; ?>
                 <tr>
-                    <td>
+                    <td data-label="Médico">
                         <span class="font-semibold text-primary"><?= e($medico['nombre']) ?></span>
                         <?php if ($medico['cedula_profesional']): ?><br><span class="text-xs text-slate-500">Céd. <?= e($medico['cedula_profesional']) ?></span><?php endif; ?>
                     </td>
-                    <td><?= e($medico['especialidad']) ?></td>
-                    <td class="text-xs text-slate-600"><?= e($medico['telefono'] ?? '') ?><br><?= e($medico['correo'] ?? '') ?></td>
-                    <td class="text-xs">
+                    <td data-label="Especialidad"><?= e($medico['especialidad']) ?></td>
+                    <td data-label="Contacto" class="text-xs text-slate-600"><?= e($medico['telefono'] ?? '') ?><br><?= e($medico['correo'] ?? '') ?></td>
+                    <td data-label="Cuenta" class="text-xs">
                         <?php if ($medico['usuario_correo']): ?>
                             <?= e($medico['usuario_correo']) ?>
                             <?php if ((int) $medico['usuario_activo'] !== 1): ?><span class="badge badge-off">inactiva</span><?php endif; ?>
@@ -66,13 +66,13 @@
                             <span class="badge badge-warn">Sin cuenta</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="Horarios">
                         <a href="<?= e(url('/admin/medicos/horarios', ['id' => $medico['id']])) ?>" class="btn-link">
                             <?= (int) $medico['horarios'] > 0 ? (int) $medico['horarios'] . ' bloque(s)' : 'Definir' ?>
                         </a>
                     </td>
-                    <td><span class="badge <?= $active ? 'badge-ok' : 'badge-off' ?>"><?= $active ? 'Activo' : 'Inactivo' ?></span></td>
-                    <td>
+                    <td data-label="Estado"><span class="badge <?= $active ? 'badge-ok' : 'badge-off' ?>"><?= $active ? 'Activo' : 'Inactivo' ?></span></td>
+                    <td data-label="Acciones">
                         <div class="flex items-center justify-end gap-2">
                             <a href="<?= e(url('/admin/medicos/editar', ['id' => $medico['id']])) ?>" class="btn-link">Editar</a>
                             <form method="post" action="<?= e(url('/admin/medicos/estado')) ?>"

@@ -24,6 +24,7 @@ final class UserModel
     /**
      * Busca por correo sin filtrar el estado, para distinguir en la bitácora
      * cuentas inexistentes de cuentas inactivas.
+     * @return array<string, mixed>|null
      */
     public function findByEmail(string $email): ?array
     {
@@ -34,6 +35,9 @@ final class UserModel
         return $user === false ? null : $user;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function findActiveById(int $id): ?array
     {
         $statement = Database::connection()->prepare(self::SELECT . ' WHERE u.id = :id AND u.activo = 1 LIMIT 1');
@@ -46,6 +50,7 @@ final class UserModel
     /**
      * RNF01.2: verificación con password_verify(); si el algoritmo por defecto cambió,
      * se vuelve a generar el hash de forma transparente.
+     * @param array<string, mixed> $user
      */
     public function passwordMatches(array $user, string $password): bool
     {

@@ -11,7 +11,8 @@ final class BitacoraModel
     public const PER_PAGE = 50;
 
     /**
-     * @return array{rows: array, total: int}
+     * @param array<string, mixed> $filters
+     * @return array{rows: list<array<string, mixed>>, total: int}
      */
     public function search(array $filters, int $page): array
     {
@@ -64,8 +65,13 @@ final class BitacoraModel
         return ['rows' => $statement->fetchAll(), 'total' => $total];
     }
 
+    /**
+     * @return list<string>
+     */
     public function eventos(): array
     {
-        return Database::connection()->query('SELECT DISTINCT evento FROM bitacora ORDER BY evento')->fetchAll(\PDO::FETCH_COLUMN);
+        return Database::connection()->query(
+            'SELECT DISTINCT evento FROM bitacora ORDER BY evento'
+        )->fetchAll(\PDO::FETCH_COLUMN);
     }
 }

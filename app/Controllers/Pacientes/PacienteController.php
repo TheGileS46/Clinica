@@ -19,6 +19,9 @@ final class PacienteController extends Controller
 {
     private PacienteModel $pacientes;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $actor;
 
     public function __construct()
@@ -30,7 +33,8 @@ final class PacienteController extends Controller
     public function index(): void
     {
         $search = $this->query('q');
-        $estado = in_array($this->query('estado'), ['activos', 'inactivos', 'todos'], true) ? $this->query('estado') : 'activos';
+        $estado = $this->query('estado');
+        $estado = in_array($estado, ['activos', 'inactivos', 'todos'], true) ? $estado : 'activos';
         $page = max(1, (int) $this->query('pagina', '1'));
         $result = $this->pacientes->search($search, $estado, $page);
 
@@ -116,6 +120,9 @@ final class PacienteController extends Controller
         $this->redirect('/pacientes/ver', ['id' => $id]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function values(): array
     {
         return [
@@ -129,6 +136,10 @@ final class PacienteController extends Controller
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function validate(array $values, int $id): array
     {
         $errors = [];
@@ -145,7 +156,7 @@ final class PacienteController extends Controller
             $errors['telefono'] = 'Escribe un teléfono válido (7 a 20 dígitos).';
         }
 
-        if ($values['correo'] !== '' && (!filter_var($values['correo'], FILTER_VALIDATE_EMAIL) || mb_strlen($values['correo']) > 150)) {
+        if ($values['correo'] !== '' && !$this->validEmail($values['correo'])) {
             $errors['correo'] = 'Correo no válido.';
         }
 
@@ -172,6 +183,10 @@ final class PacienteController extends Controller
         return $errors;
     }
 
+    /**
+     * @param array<string, string> $errors
+     * @param array<string, mixed> $paciente
+     */
     private function form(array $paciente, array $errors = []): void
     {
         $editing = !empty($paciente['id']);

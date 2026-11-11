@@ -24,7 +24,7 @@
 </form>
 
 <div class="card mt-6 overflow-x-auto p-0 sm:p-0">
-    <table class="table">
+    <table class="table table-stack">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -40,18 +40,18 @@
             <?php endif; ?>
             <?php foreach ($usuarios as $usuario): ?>
                 <tr>
-                    <td class="font-semibold text-primary">
+                    <td data-label="Nombre" class="font-semibold text-primary">
                         <?= e($usuario['nombre']) ?>
                         <?php if ((int) $usuario['id'] === $currentUserId): ?><span class="badge badge-info ml-1">Tú</span><?php endif; ?>
                     </td>
-                    <td class="text-slate-600"><?= e($usuario['correo']) ?></td>
-                    <td><?= e($usuario['rol']) ?></td>
-                    <td>
+                    <td data-label="Correo" class="text-slate-600"><?= e($usuario['correo']) ?></td>
+                    <td data-label="Rol"><?= e($usuario['rol']) ?></td>
+                    <td data-label="Estado">
                         <span class="badge <?= (int) $usuario['activo'] === 1 ? 'badge-ok' : 'badge-off' ?>">
                             <?= (int) $usuario['activo'] === 1 ? 'Activo' : 'Inactivo' ?>
                         </span>
                     </td>
-                    <td>
+                    <td data-label="Acciones">
                         <div class="flex items-center justify-end gap-2">
                             <a href="<?= e(url('/admin/usuarios/editar', ['id' => $usuario['id']])) ?>" class="btn-link">Editar</a>
                             <?php if ((int) $usuario['id'] !== $currentUserId): ?>

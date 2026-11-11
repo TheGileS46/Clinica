@@ -1,13 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * RNF01.2: convierte a password_hash() las contraseñas que sigan en texto plano.
  * Es idempotente: los valores que ya son hash se omiten.
  *
  * Uso: php bin/hash-passwords.php
  */
+
+declare(strict_types=1);
 
 if (PHP_SAPI !== 'cli') {
     exit(1);
