@@ -1,0 +1,17 @@
+# La única carpeta que se sirve al navegador es public/.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # /Clinica/ -> /Clinica/public/ (funciona con cualquier nombre de carpeta)
+    RewriteRule ^$ %{REQUEST_URI}public/ [R=302,L,NS]
+
+    # Todo lo demás fuera de public/ (.env, app/, db/, bin/, docs/, node_modules/...) queda prohibido.
+    RewriteRule ^(?!public(/|$)) - [F,L,NS]
+</IfModule>
+
+# Respaldo si mod_rewrite no está activo: al menos no exponer archivos ocultos como .env
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
