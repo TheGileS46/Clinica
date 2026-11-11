@@ -270,6 +270,27 @@ INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `password`, `rol_id`, `activo`
 INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `password`, `rol_id`, `activo`, `created_at`, `updated_at`) VALUES (3,'Dr. Juan Pérez','medico@clinica.com','$2y$10$dnmC7bBdBxrKQINL269BnehAQLncRlcmi60mACQfUKFjUnNemhWr6',3,1,'2026-09-28 01:25:56','2026-11-11 14:49:58');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
+
+LOCK TABLES `medicos` WRITE;
+/*!40000 ALTER TABLE `medicos` DISABLE KEYS */;
+INSERT INTO `medicos` (`id`, `usuario_id`, `especialidad_id`, `nombre`, `cedula_profesional`, `telefono`, `correo`, `activo`) VALUES (1,3,1,'Dr. Juan Pérez',NULL,NULL,'medico@clinica.com',1);
+/*!40000 ALTER TABLE `medicos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+LOCK TABLES `horarios_medico` WRITE;
+/*!40000 ALTER TABLE `horarios_medico` DISABLE KEYS */;
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (1,1,1,'09:00:00','14:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (2,1,1,'16:00:00','19:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (3,1,2,'09:00:00','14:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (4,1,2,'16:00:00','19:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (5,1,3,'09:00:00','14:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (6,1,3,'16:00:00','19:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (7,1,4,'09:00:00','14:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (8,1,4,'16:00:00','19:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (9,1,5,'09:00:00','14:00:00',1);
+INSERT INTO `horarios_medico` (`id`, `medico_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `activo`) VALUES (10,1,5,'16:00:00','19:00:00',1);
+/*!40000 ALTER TABLE `horarios_medico` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

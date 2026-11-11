@@ -42,6 +42,18 @@ abstract class Controller
         return $value === false ? 0 : (int) $value;
     }
 
+    protected function validPhone(string $phone): bool
+    {
+        return preg_match('/^\+?[0-9 ()-]{7,20}$/', $phone) === 1;
+    }
+
+    protected function validDate(string $date): bool
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+
+        return $parsed !== false && $parsed->format('Y-m-d') === $date;
+    }
+
     protected function notFound(): never
     {
         throw new RuntimeException('Registro no encontrado.', 404);

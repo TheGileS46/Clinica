@@ -9,6 +9,14 @@ $labels = [
     'usuario_actualizado' => 'Usuario actualizado',
     'usuario_activado' => 'Usuario activado',
     'usuario_desactivado' => 'Usuario desactivado',
+    'paciente_creado' => 'Paciente registrado',
+    'paciente_actualizado' => 'Paciente actualizado',
+    'paciente_activado' => 'Paciente reactivado',
+    'paciente_desactivado' => 'Paciente desactivado',
+    'medico_creado' => 'Médico registrado',
+    'medico_actualizado' => 'Médico actualizado',
+    'medico_activado' => 'Médico activado',
+    'medico_desactivado' => 'Médico desactivado',
 ];
 $label = static fn (string $evento): string => $labels[$evento] ?? ucfirst(str_replace('_', ' ', $evento));
 ?>

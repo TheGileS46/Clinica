@@ -17,6 +17,6 @@ OUT=db/clinica_db.sql
   echo
   echo "-- Datos base"
   "$MYSQLDUMP" -uroot --no-create-info --skip-comments --skip-triggers --complete-insert --skip-extended-insert "$DB" \
-    roles especialidades servicios usuarios ${SEED_TABLES:-}
+    roles especialidades servicios usuarios medicos horarios_medico
 } > "$OUT"
 echo "Generado $OUT"

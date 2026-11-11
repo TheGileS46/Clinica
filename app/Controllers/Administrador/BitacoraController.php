@@ -18,8 +18,8 @@ final class BitacoraController extends Controller
             'evento' => $this->query('evento'),
             'resultado' => $this->query('resultado'),
             'correo' => $this->query('correo'),
-            'desde' => $this->validDate($this->query('desde')),
-            'hasta' => $this->validDate($this->query('hasta')),
+            'desde' => $this->dateOrEmpty($this->query('desde')),
+            'hasta' => $this->dateOrEmpty($this->query('hasta')),
         ];
         $page = max(1, (int) $this->query('pagina', '1'));
         $model = new BitacoraModel();
@@ -36,8 +36,8 @@ final class BitacoraController extends Controller
         ]);
     }
 
-    private function validDate(string $value): string
+    private function dateOrEmpty(string $value): string
     {
-        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1 ? $value : '';
+        return $this->validDate($value) ? $value : '';
     }
 }
