@@ -13,9 +13,9 @@ final class AdministradorModel
             'title' => 'Panel de administración',
             'message' => 'Desde aquí podrás organizar usuarios, servicios y la operación general de la clínica.',
             'actions' => [
-                ['title' => 'Usuarios', 'description' => 'Gestionar cuentas y permisos del equipo.'],
+                ['title' => 'Usuarios', 'description' => 'Gestionar cuentas, roles y estado del equipo.', 'path' => '/admin/usuarios'],
                 ['title' => 'Servicios y especialidades', 'description' => 'Mantener actualizada la oferta de atención.'],
-                ['title' => 'Configuración', 'description' => 'Revisar los datos generales del sistema.'],
+                ['title' => 'Bitácora', 'description' => 'Revisar accesos, fallos de autenticación y cambios.', 'path' => '/admin/bitacora'],
             ],
         ];
     }

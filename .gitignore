@@ -1,0 +1,14 @@
+# Dependencias
+/node_modules/
+
+# Configuración sensible (RNF01.9)
+.env
+
+# Respaldos locales de la base de datos
+/db/backup/
+
+# Sistema / editor
+.DS_Store
+.idea/
+.vscode/
+*.log

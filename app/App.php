@@ -4,97 +4,142 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Controllers\HomeController;
-use App\Controllers\Auth\LoginController;
-use App\Controllers\Administrador\AdministradorController;
-use App\Controllers\Medico\MedicoController;
-use App\Controllers\Recepcion\RecepcionController;
 use App\Support\Auth;
+use App\Support\Bitacora;
+use App\Support\Csrf;
+use App\Support\Flash;
+use App\Support\Request;
 use RuntimeException;
 use Throwable;
 
 final class App
 {
+    private static bool $booted = false;
+
     private array $config;
 
     private array $routes;
 
     public function __construct()
     {
-        $this->loadEnvironment();
+        self::bootstrap();
         $this->config = require __DIR__ . '/config/app.php';
         $this->routes = require __DIR__ . '/config/routes.php';
+    }
 
-        date_default_timezone_set($this->config['timezone']);
+    /**
+     * Carga variables de entorno, autoload, helpers y zona horaria.
+     * También se usa desde los scripts de consola (bin/).
+     */
+    public static function bootstrap(): void
+    {
+        if (self::$booted) {
+            return;
+        }
+
+        self::loadEnvironment();
+        self::autoload();
+        require_once __DIR__ . '/Support/helpers.php';
+
+        $config = require __DIR__ . '/config/app.php';
+        date_default_timezone_set($config['timezone']);
+
+        self::$booted = true;
     }
 
     public function run(): void
     {
-        $this->autoload();
-        Auth::start();
+        $this->sendSecurityHeaders();
 
         try {
-            $path = $this->path();
+            Auth::start();
+            $path = Request::path();
+            $method = Request::method();
 
-            if ($path === $this->routes['health']) {
-                $this->json([
-                    'status' => 'ok',
-                    'application' => $this->config['name'],
-                    'php' => PHP_VERSION,
-                    'time' => date(DATE_ATOM),
-                ]);
+            if (Auth::enforceTimeout((int) $this->config['session_timeout'])) {
+                Flash::set('info', 'Tu sesión se cerró por inactividad. Vuelve a iniciar sesión.');
             }
 
-            if ($path === $this->routes['login']) {
-                (new LoginController())->index();
-                return;
+            if ($method === 'POST' && !Csrf::verify($_POST['_token'] ?? null)) {
+                Bitacora::registrar('csrf_invalido', 'fallo', Auth::user()['id'] ?? null, Auth::user()['correo'] ?? null, $path);
+                Flash::set('error', 'El formulario expiró. Intenta de nuevo.');
+                header('Location: ' . Auth::route($path) . Request::queryString());
+                exit;
             }
 
-            if ($path === $this->routes['logout']) {
-                (new LoginController())->logout();
-                return;
-            }
-
-            if ($path === $this->routes['admin']) {
-                (new AdministradorController())->index();
-                return;
-            }
-
-            if ($path === $this->routes['medico']) {
-                (new MedicoController())->index();
-                return;
-            }
-
-            if ($path === $this->routes['recepcion']) {
-                (new RecepcionController())->index();
-                return;
-            }
-
-            if ($path !== $this->routes['home']) {
-                throw new RuntimeException('Página no encontrada.', 404);
-            }
-
-            (new HomeController())->index();
+            $this->dispatch($method, $path);
         } catch (Throwable $exception) {
-            $status = $exception->getCode() >= 400 && $exception->getCode() < 600
-                ? $exception->getCode()
-                : 500;
-
-            if ($status >= 500) {
-                error_log($exception->getMessage());
-            }
-
-            http_response_code($status);
-            $message = $this->debug()
-                ? $exception->getMessage()
-                : ($status === 404 ? 'Página no encontrada.' : 'Ocurrió un error interno.');
-
-            echo '<!doctype html><html lang="es"><meta charset="utf-8"><title>Error ' . $status . '</title>';
-            echo '<h1>Error ' . $status . '</h1><p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>';
+            $this->renderError($exception);
         }
     }
 
-    private function autoload(): void
+    private function dispatch(string $method, string $path): void
+    {
+        $allowed = [];
+
+        foreach ($this->routes as [$routeMethod, $routePath, $handler]) {
+            if ($routePath !== $path) {
+                continue;
+            }
+
+            if ($routeMethod !== $method) {
+                $allowed[] = $routeMethod;
+                continue;
+            }
+
+            [$class, $action] = $handler;
+            (new $class())->{$action}();
+            return;
+        }
+
+        if ($allowed !== []) {
+            header('Allow: ' . implode(', ', array_unique($allowed)));
+            throw new RuntimeException('Método no permitido.', 405);
+        }
+
+        throw new RuntimeException('Página no encontrada.', 404);
+    }
+
+    private function sendSecurityHeaders(): void
+    {
+        if (headers_sent()) {
+            return;
+        }
+
+        header('X-Frame-Options: SAMEORIGIN');
+        header('X-Content-Type-Options: nosniff');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'");
+    }
+
+    private function renderError(Throwable $exception): void
+    {
+        $code = (int) $exception->getCode();
+        $status = $code >= 400 && $code < 600 ? $code : 500;
+
+        if ($status >= 500) {
+            error_log((string) $exception);
+        }
+
+        $messages = [
+            403 => 'No tienes permiso para realizar esta acción.',
+            404 => 'Página no encontrada.',
+            405 => 'Método no permitido.',
+        ];
+
+        $message = $this->config['debug']
+            ? $exception->getMessage()
+            : ($messages[$status] ?? 'Ocurrió un error interno.');
+
+        if (!headers_sent()) {
+            http_response_code($status);
+        }
+
+        echo '<!doctype html><html lang="es"><meta charset="utf-8"><title>Error ' . $status . '</title>';
+        echo '<h1>Error ' . $status . '</h1><p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>';
+    }
+
+    private static function autoload(): void
     {
         spl_autoload_register(static function (string $class): void {
             if (!str_starts_with($class, 'App\\')) {
@@ -109,33 +154,7 @@ final class App
         });
     }
 
-    private function path(): string
-    {
-        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-        $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
-
-        if ($base !== '' && $base !== '/' && str_starts_with($path, $base)) {
-            $path = substr($path, strlen($base)) ?: '/';
-        }
-
-        $path = '/' . trim($path, '/');
-
-        return $path === '//' ? '/' : $path;
-    }
-
-    private function json(array $data): never
-    {
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-        exit;
-    }
-
-    private function debug(): bool
-    {
-        return $this->config['debug'];
-    }
-
-    private function loadEnvironment(): void
+    private static function loadEnvironment(): void
     {
         $file = dirname(__DIR__) . '/.env';
 
